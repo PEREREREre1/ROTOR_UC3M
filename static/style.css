@@ -1,0 +1,85 @@
+#azel {
+    margin-bottom: 5px;
+}
+
+#azel_table {
+    text-align: center;
+    font-family: monospace;
+    background: black;
+}
+#azel_num_row {
+    font-size: 36pt;
+    font-weight: bold;
+    color: #00fd00;
+}
+
+#azel_head_row {
+    color: #fff;
+}
+ 
+.azel_num {
+    padding: 10px;
+}
+
+.azel_head {
+    width: 10em;
+}
+
+
+.success_msg {
+    display: inline;
+}
+
+.container { 
+    border:2px solid #ccc; width:300px; height: 100px; overflow-y: scroll; 
+}
+
+#satellite_info{
+    margin-top: 0px;
+
+}
+
+#selection_amateur{
+    margin-top: 10px;
+    margin-bottom: 30px;
+}
+
+#az-input{
+    display: block;
+}
+
+#el-input{
+    display: block;
+}
+
+.contenedor {
+    display: flex;
+    flex-direction: row;
+  }
+  
+.columna1, .columna2 {
+    flex: 1 0 0;
+  }  
+
+body {
+    border: 20px solid #ffffff ;
+    background-image: url('');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: 50% 50%;
+    background-position: center;
+  }
+
+  #update_satellite_form{
+    margin-bottom: 15px;
+  }
+
+  #update_pases{
+    margin-top: 15px;
+    margin-bottom: 15px;
+  }
+
+  #seguir_pase{
+    margin-top: 15px;
+    margin-bottom: 15px;
+  }

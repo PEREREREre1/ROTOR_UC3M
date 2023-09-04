@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>UC3M CONTROL ROTOR</title>
+<meta charset=utf-8 />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css">
+
+
+
+
+
+</head>
+<body>
+<h1 align="center" style="font-family: 'Times New Roman', Times, serif; font-size: 80px;"><b>UC3M CONTROL ROTOR</b></h1>
+<hr />
+<div class="contenedor">
+    <div class="columna1" id="columna1">
+        <div id="1er_cuadro">
+            <h2>POSICIÓN ACTUAL</h2>
+            <p>
+            Por razones de rendimiento no es automático.
+            </p>
+            <div id="azel">
+                <table id="azel_table">
+                    <tr id="azel_num_row">
+                        <td class="azel_num" id="azel_nums_az">{{ az }}&deg;</td>
+                        <td class="azel_num" id="azel_nums_el">{{ el }}&deg;</td>
+                    </tr>
+                    <tr id="azel_head_row">
+                        <th class="azel_head" id="azel_heads_az">Azimuth</th>
+                        <th class="azel_head" id="azel_heads_el">Elevation</th>
+                    </tr>
+                </table>
+            </div>
+            <form id="update_azel_form">
+                <input id="update_azel_submit" type="button" value="ACTUALIZAR" />
+                <div id="update_azel_success" class="success_msg"></div>
+            </form>
+        </div>
+        <h2>ESTABLECER POSICIÓN</h2>
+        <form id="set_pos_form">
+            <label>Az: </label><input id="az-input" type="number" min="0" max="360" name="az"></input>
+            <label>El: </label><input id="el-input" type="number" min="0" max="180" name="el"></input>
+            <input id="set_pos_submit" type=button value="ESTABLECER" />
+            <div id="set_pos_success" class="success_msg"></div>
+        </form>
+
+    </div>
+    <div class="columna2">
+        <h2>SATÉLITE (por defecto: NOAA 15)</h2>
+        <div id="satellite_info">
+            <strong>Elevación [º]:</strong> 
+                <span id="satellite_alt">{{ satellite_info['alt'] }}</span> <br />
+            <strong>Azimuth [º]:</strong>
+                <span id="satellite_az">{{ satellite_info['az_sat'] }}</span> <br />
+            <strong>Distancia [km]:</strong>
+                <span id="satellite_dist">{{ satellite_info['dist_sat'] }}</span> <br />
+        </div>
+        <form id="update_satellite_form">
+            <input id="update_satellite_submit" type="button" value="ACTUALIZAR DATOS" />
+            <div id="update_satellite_success" class="success_msg"></div>
+        </form>
+        
+        <div class="search-box">
+            <input type="text" placeholder="Buscar satélite" list="satellites" id="sat_name">
+            <datalist id="satellites">
+                {% for name in names %}
+                <option value="{{name}}"></option>
+                {% endfor %}
+
+            </datalist>
+            <input id="set_satellite_submit" type="button" value="SELECCIONAR SATELITE" />
+            <div id="set_satellite_success" class="success_msg"></div>
+        </div>
+
+        <form>
+            <input id="update_pases" type="button" value="CARGAR PASES" />
+            <div id="update_pases_success" class="success_msg"></div>
+        </form>
+        <form>
+            <label for="pases_down">PASES:</label>
+            <select id="pases_down" name="pases_down">
+                <option value="">SELECCIONE UN PASE:</option>
+            </select>
+        </form>
+        <input id="seguir_pase" type="button" value="SEGUIR PASE" />
+        <div id="seguir_pase_success" class="success_msg"></div>
+
+        <script>
+            var norad_n2yo = '{{norad_n2yo}}';
+        </script>
+        <script type="text/javascript" src="https://www.n2yo.com/js/widget-tracker.js"></script>
+
+    </div>
+
+</div>
+
+
+
+<script>
+$("#set_pos_submit").click(function() {
+        var setPosData = {'az': $("#az-input").val(), 'el': $("#el-input").val()};
+        $("#set_pos_success").html("...");
+        $.ajax({
+            type: 'POST',
+            url: "/api/set_pos",
+            data: setPosData
+            })
+        .done(function() {
+            $("#set_pos_success").html("&#10003;");
+            })
+        .fail(function() {
+            $("#set_pos_success").html("Error");
+            });
+        });
+
+$("#update_azel_submit").click(function() {
+        $("#update_azel_success").html("...");
+        $("#azel_nums_az").html("...&deg;");
+        $("#azel_nums_el").html("...&deg;");
+        $.ajax({
+            type: 'GET',
+            url: "/api/get_pos",
+            })
+        .done(function(data) {
+            var az = data['az'];
+            var el = data['el'];
+            $("#azel_nums_az").html(az+"&deg;");
+            $("#azel_nums_el").html(el+"&deg;");
+
+            $("#update_azel_success").html("&#10003;");
+            })
+        .fail(function(data) {
+            $("#update_azel_success").html("Error");
+            });
+        });
+
+$("#update_satellite_submit").click(function() {
+        $("#update_satellite_success").html("...");
+        $.ajax({
+            type: 'GET',
+            url: "/api/set_sat_name",
+            })
+        .done(function(data) {
+            $("#satellite_alt").text(data['alt']);
+            $("#satellite_az").text(data['az_sat']);
+            $("#satellite_dist").text(data['dist_sat']);
+            
+            $("#update_satellite_success").html("&#10003;");
+            });
+        });
+
+$("#set_satellite_submit").click(function() {
+        var setSatData = {'satelite': $("#sat_name").val()};
+        $("#set_satellite_success").html("...");
+        $.ajax({
+            type: 'POST',
+            url: "/api/set_sat_name",
+            data: setSatData
+            })
+        .done(function() {
+            window.location.reload();
+            $("#set_satellite_success").html("&#10003;");
+            })
+        .fail(function() {
+            $("#set_satellite_success").html("Error");
+            });
+        });
+
+$("#selec_satellite_submit").click(function() {
+    var setSatData = {'selection': $("#selection").val()};
+    $("#selec_satellite_success").html("...");
+    $.ajax({
+        type: 'POST',
+        url: "/api/selec_sat_name",
+        data: setSatData
+        })
+    .done(function() {
+        $("#selec_satellite_success").html("&#10003;");
+        })
+    .fail(function() {
+        $("#selec_satellite_success").html("Error");
+        });
+    });
+
+$("#update_pases").click(function() {
+    $("#update_pases_success").html("...");
+	var selectedTipo = $(this).children("option:selected").val();
+	$.ajax({
+		url: '/api/get_pases',
+		type: "GET"
+    })
+	.done(function(data) {
+		$("#pases_down").empty();
+		$("#pases_down").append("<option value=''>SELECCIONE UN PASE:</option>");
+		$.each(data, function(index, value) {
+			$("#pases_down").append("<option value='"+ index +"'>" + value+ "</option>");
+		});
+
+        $("#update_pases_success").html("&#10003;");
+	    })
+        .fail(function() {
+            $("#update_pases_success").html("Error");
+        });
+    });
+
+$("#seguir_pase").click(function() {
+    var setPase = {'index_def': $("#pases_down").val(),'satelite_def': $("#sat_name").val()};
+    $("#seguir_pase_success").html("...");
+        $.ajax({
+            type: 'POST',
+            url: "/api/seguir_pase",
+            data: setPase
+            })
+        .done(function() {
+            $("#seguir_pase_success").html("&#10003;");
+            })
+        .fail(function() {
+            $("#seguir_pase_success").html("Error");
+            });
+        });
+
+
+
+
+		
+
+</script>
+</body>
+</html>
